@@ -3,6 +3,7 @@ import { getAllUsers, getDb } from "@/lib/db";
 import { revenueToSell, getProbabilities } from "@/lib/lmsr";
 
 export async function GET() {
+  try {
   const db = getDb();
   const users = getAllUsers();
 
@@ -44,9 +45,7 @@ export async function GET() {
 
     const tradeCount = (
       db
-        .prepare(
-          "SELECT COUNT(*) as cnt FROM trades WHERE user_id = ? AND (market_id = ? OR 1=1)"
-        )
+        .prepare("SELECT COUNT(*) as cnt FROM trades WHERE user_id = ?")
         .get(user.id) as { cnt: number }
     ).cnt;
 
@@ -67,4 +66,8 @@ export async function GET() {
   leaderboard.sort((a, b) => b.portfolioValue - a.portfolioValue);
 
   return NextResponse.json({ leaderboard, probabilities: probs });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

@@ -21,51 +21,58 @@ export function OutcomeCards({
   const isOpen = marketStatus === "open";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {OUTCOME_LABELS.map((label, i) => {
-        const prob = probabilities[i] ?? 0.25;
-        const price = prob;
-        const shares = userShares[i] ?? 0;
-        const isSelected = selectedOutcome === i;
-        const color = OUTCOME_COLORS[i];
+    <div className="border border-[var(--border)] bg-[var(--surface)]">
+      <div className="px-3 py-2">
+        <span className="text-[10px] uppercase tracking-widest text-[var(--muted)]">
+          {isOpen ? "Pick a range to bet on" : "Outcomes"}
+        </span>
+      </div>
+      <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
+        {OUTCOME_LABELS.map((label, i) => {
+          const prob = probabilities[i] ?? 0.25;
+          const pct = Math.round(prob * 100);
+          const shares = userShares[i] ?? 0;
+          const isSelected = selectedOutcome === i;
+          const color = OUTCOME_COLORS[i];
 
-        return (
-          <button
-            key={i}
-            onClick={() => isOpen && onSelect(isSelected ? -1 : i)}
-            className={`relative p-4 rounded-xl border text-left transition-all duration-200 ${
-              isSelected
-                ? "border-2 shadow-lg"
-                : "border-[#262626] hover:border-[#404040]"
-            } ${!isOpen ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} bg-[#141414]`}
-            style={
-              isSelected
-                ? { borderColor: color, boxShadow: `0 0 20px ${color}30` }
-                : {}
-            }
-          >
-            <div
-              className="absolute top-0 left-0 w-1 h-full rounded-l-xl"
-              style={{ backgroundColor: color }}
-            />
-            <div className="pl-2">
-              <div className="text-xs text-gray-400 mb-1">{label}</div>
-              <div className="text-2xl font-bold text-white">{Math.round(prob * 100)}%</div>
-              <div className="text-xs text-gray-500 mt-1">
-                ${price.toFixed(2)}/share
-              </div>
-              {shares > 0 && (
+          return (
+            <button
+              key={i}
+              onClick={() => isOpen && onSelect(isSelected ? -1 : i)}
+              className={`relative w-full flex items-center justify-between px-3 py-2.5 transition-all duration-150 overflow-hidden ${
+                !isOpen ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:bg-[var(--surface-2)]"
+              }`}
+              style={isSelected ? { boxShadow: `inset 0 0 0 1px ${color}` } : {}}
+            >
+              {/* Fill bar background */}
+              <div
+                className="absolute inset-y-0 left-0 transition-all duration-500 opacity-[0.08]"
+                style={{ width: `${pct}%`, backgroundColor: color }}
+              />
+
+              <div className="relative flex items-center gap-2.5">
                 <div
-                  className="text-xs font-medium mt-2 px-2 py-0.5 rounded-full inline-block"
-                  style={{ backgroundColor: `${color}20`, color }}
-                >
-                  {shares.toFixed(2)} shares
-                </div>
-              )}
-            </div>
-          </button>
-        );
-      })}
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-sm font-medium font-mono">{label}</span>
+                {shares > 0 && (
+                  <span
+                    className="text-[10px] font-mono px-1.5 py-0.5 rounded-sm"
+                    style={{ color, backgroundColor: `${color}15` }}
+                  >
+                    {shares.toFixed(1)} shares
+                  </span>
+                )}
+              </div>
+
+              <span className="relative text-base font-bold font-mono" style={{ color }}>
+                {pct}%
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

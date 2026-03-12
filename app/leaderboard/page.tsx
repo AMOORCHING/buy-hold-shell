@@ -19,9 +19,7 @@ interface LeaderboardEntry {
 
 type SortKey = "portfolioValue" | "pnl" | "pnlPct" | "tradeCount";
 
-const MEDALS = ["🥇", "🥈", "🥉"];
-
-function Avatar({ name, image, size = 32 }: { name: string; image: string | null; size?: number }) {
+function Avatar({ name, image, size = 24 }: { name: string; image: string | null; size?: number }) {
   if (image) {
     return (
       <Image
@@ -29,13 +27,13 @@ function Avatar({ name, image, size = 32 }: { name: string; image: string | null
         alt={name}
         width={size}
         height={size}
-        className="rounded-full object-cover"
+        className="object-cover"
       />
     );
   }
   return (
     <div
-      className="rounded-full bg-[#262626] flex items-center justify-center text-gray-400 font-medium"
+      className="bg-[var(--surface-2)] flex items-center justify-center text-[var(--muted)] font-medium"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
       {name[0]}
@@ -52,11 +50,15 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     fetch("/api/leaderboard")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
         setLeaderboard(data.leaderboard ?? []);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const sorted = [...leaderboard].sort((a, b) => {
@@ -73,46 +75,40 @@ export default function LeaderboardPage() {
     }
   };
 
-  const SortIcon = ({ col }: { col: SortKey }) => {
-    if (sortKey !== col) return <span className="text-gray-600 ml-1">↕</span>;
-    return <span className="text-white ml-1">{sortDir === "desc" ? "↓" : "↑"}</span>;
+  const SortIndicator = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <span className="text-[var(--muted)] ml-1 opacity-40">^</span>;
+    return <span className="ml-1">{sortDir === "desc" ? "v" : "^"}</span>;
   };
 
-  const top3 = leaderboard.slice(0, 3);
-
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Leaderboard</h1>
+    <div className="h-full flex flex-col gap-3 overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
+        <h1 className="text-sm font-semibold">Leaderboard</h1>
+        <span className="text-[10px] font-mono text-[var(--muted)]">
+          {leaderboard.length} traders
+        </span>
+      </div>
 
-      {/* Podium */}
-      {!loading && top3.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          {[1, 0, 2].map((pos) => {
-            const entry = top3[pos];
-            if (!entry) return <div key={pos} />;
-            const heights = ["h-28", "h-36", "h-24"];
+      {/* Top 3 strip */}
+      {!loading && leaderboard.length > 0 && (
+        <div className="flex-shrink-0 grid grid-cols-3 gap-px bg-[var(--border)]">
+          {[0, 1, 2].map((pos) => {
+            const entry = leaderboard[pos];
+            if (!entry) return <div key={pos} className="bg-[var(--background)]" />;
+            const rankLabels = ["1st", "2nd", "3rd"];
+            const rankColors = ["text-yellow-400", "text-[var(--muted)]", "text-orange-400"];
             return (
-              <div key={pos} className="flex flex-col items-center gap-2">
-                <div className="text-2xl">{MEDALS[pos]}</div>
-                <Avatar name={entry.name} image={entry.image} size={pos === 0 ? 56 : 44} />
-                <div className="text-center">
-                  <div className="text-sm font-semibold text-white truncate max-w-24">
-                    {entry.name.split(" ")[0]}
-                  </div>
-                  <div className="text-xs font-bold text-green-400">
+              <div key={pos} className="bg-[var(--surface)] p-4 flex items-center gap-3">
+                <span className={`text-xs font-bold font-mono ${rankColors[pos]}`}>
+                  {rankLabels[pos]}
+                </span>
+                <Avatar name={entry.name} image={entry.image} size={28} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium truncate">{entry.name}</div>
+                  <div className="text-xs font-mono text-green-400">
                     ${entry.portfolioValue.toFixed(2)}
                   </div>
-                </div>
-                <div
-                  className={`w-full ${heights[pos]} rounded-t-xl flex items-end justify-center pb-2 ${
-                    pos === 0
-                      ? "bg-yellow-500/20 border border-yellow-500/40"
-                      : pos === 1
-                      ? "bg-gray-500/20 border border-gray-500/40"
-                      : "bg-orange-500/20 border border-orange-500/40"
-                  }`}
-                >
-                  <span className="text-2xl font-black text-gray-500">{pos + 1}</span>
                 </div>
               </div>
             );
@@ -120,102 +116,102 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {/* Full table */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Table */}
+      <div className="flex-1 border border-[var(--border)] bg-[var(--surface)] overflow-hidden flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#262626] text-xs text-gray-400">
-                <th className="px-4 py-3 text-left w-10">#</th>
-                <th className="px-4 py-3 text-left">Player</th>
+            <thead className="sticky top-0 bg-[var(--surface)] z-10">
+              <tr className="border-b border-[var(--border)] text-[10px] uppercase tracking-widest text-[var(--muted)]">
+                <th className="px-4 py-2.5 text-left w-10 font-medium">#</th>
+                <th className="px-4 py-2.5 text-left font-medium">Player</th>
                 <th
-                  className="px-4 py-3 text-right cursor-pointer hover:text-white"
+                  className="px-4 py-2.5 text-right cursor-pointer hover:text-[var(--foreground)] font-medium"
                   onClick={() => handleSort("portfolioValue")}
                 >
-                  Portfolio <SortIcon col="portfolioValue" />
+                  Portfolio <SortIndicator col="portfolioValue" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right cursor-pointer hover:text-white hidden md:table-cell"
+                  className="px-4 py-2.5 text-right cursor-pointer hover:text-[var(--foreground)] font-medium hidden md:table-cell"
                   onClick={() => handleSort("pnl")}
                 >
-                  P&L <SortIcon col="pnl" />
+                  P&L <SortIndicator col="pnl" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right cursor-pointer hover:text-white hidden sm:table-cell"
+                  className="px-4 py-2.5 text-right cursor-pointer hover:text-[var(--foreground)] font-medium hidden sm:table-cell"
                   onClick={() => handleSort("pnlPct")}
                 >
-                  P&L % <SortIcon col="pnlPct" />
+                  Return <SortIndicator col="pnlPct" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right cursor-pointer hover:text-white hidden lg:table-cell"
+                  className="px-4 py-2.5 text-right cursor-pointer hover:text-[var(--foreground)] font-medium hidden lg:table-cell"
                   onClick={() => handleSort("tradeCount")}
                 >
-                  Trades <SortIcon col="tradeCount" />
+                  Trades <SortIndicator col="tradeCount" />
                 </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-[#1a1a1a]">
-                    <td colSpan={6} className="px-4 py-4">
-                      <div className="h-4 bg-[#1a1a1a] rounded animate-pulse" />
+                  <tr key={i} className="border-b border-[var(--border)]">
+                    <td colSpan={6} className="px-4 py-3">
+                      <div className="h-3 bg-[var(--surface-2)] animate-pulse" />
                     </td>
                   </tr>
                 ))
               ) : sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-500 py-8 text-sm">
-                    No traders yet. Be the first!
+                  <td colSpan={6} className="text-center text-[var(--muted)] py-8 text-xs">
+                    No traders yet.
                   </td>
                 </tr>
               ) : (
-                sorted.map((entry, idx) => {
+                sorted.map((entry) => {
                   const rank = leaderboard.findIndex((e) => e.id === entry.id) + 1;
                   const isMe = entry.id === session?.user?.id;
                   return (
                     <tr
                       key={entry.id}
-                      className={`border-b border-[#1a1a1a] text-sm transition-colors ${
+                      className={`border-b border-[var(--border)] text-xs transition-colors ${
                         isMe
-                          ? "bg-[#1a1a1a] border-l-2 border-l-blue-500"
-                          : "hover:bg-[#0f0f0f]"
+                          ? "bg-[var(--surface-2)]"
+                          : "hover:bg-[var(--surface-2)]"
                       }`}
                     >
-                      <td className="px-4 py-3 text-gray-500 font-medium">
-                        {rank <= 3 ? MEDALS[rank - 1] : rank}
+                      <td className="px-4 py-2.5 text-[var(--muted)] font-mono font-medium">
+                        {rank}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
-                          <Avatar name={entry.name} image={entry.image} size={28} />
-                          <div>
-                            <div className="font-medium text-white">
+                          <Avatar name={entry.name} image={entry.image} size={22} />
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">
                               {entry.name}
                               {isMe && (
-                                <span className="ml-1.5 text-xs text-blue-400">(you)</span>
+                                <span className="ml-1.5 text-[10px] text-blue-400 font-mono">(you)</span>
                               )}
                             </div>
-                            <div className="text-xs text-gray-500">
-                              Deposited ${entry.totalDeposited.toFixed(2)}
+                            <div className="text-[10px] text-[var(--muted)] font-mono">
+                              dep ${entry.totalDeposited.toFixed(2)}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-white">
+                      <td className="px-4 py-2.5 text-right font-semibold font-mono">
                         ${entry.portfolioValue.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-right hidden md:table-cell">
+                      <td className="px-4 py-2.5 text-right hidden md:table-cell font-mono">
                         <span className={entry.pnl >= 0 ? "text-green-400" : "text-red-400"}>
                           {entry.pnl >= 0 ? "+" : ""}${entry.pnl.toFixed(2)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right hidden sm:table-cell">
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell font-mono">
                         <span className={entry.pnlPct >= 0 ? "text-green-400" : "text-red-400"}>
                           {entry.pnlPct >= 0 ? "+" : ""}
                           {entry.pnlPct.toFixed(1)}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-gray-400 hidden lg:table-cell">
+                      <td className="px-4 py-2.5 text-right text-[var(--muted)] hidden lg:table-cell font-mono">
                         {entry.tradeCount}
                       </td>
                     </tr>

@@ -1,13 +1,35 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --surface: #f7f7f7;
+  --surface-2: #eeeeee;
+  --border: #e0e0e0;
+  --border-hover: #c0c0c0;
+  --muted: #737373;
+  --accent: #10b981;
+  --accent-hover: #059669;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --surface: #111113;
+  --surface-2: #19191b;
+  --border: #1e1e22;
+  --border-hover: #2a2a2e;
+  --muted: #63636e;
+  --accent: #10b981;
+  --accent-hover: #34d399;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-feature-settings: "ss01", "ss02", "cv01";
 }
 
 /* Smooth scrollbar */
@@ -16,10 +38,10 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--border);
   border-radius: 3px;
 }
 
@@ -27,19 +49,24 @@ body {
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: #262626;
-  height: 4px;
-  border-radius: 2px;
+  background: var(--border);
+  height: 3px;
+  border-radius: 1px;
   outline: none;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: white;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--foreground);
   cursor: pointer;
+}
+
+/* Tabular numbers for data */
+.font-mono, [data-mono] {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Animation for toasts */

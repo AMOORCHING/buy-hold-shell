@@ -14,7 +14,6 @@ interface PositionsPanelProps {
   positions: Position[];
   quantities: number[];
   b: number;
-  totalDeposited: number;
   balance: number;
 }
 
@@ -22,16 +21,15 @@ export function PositionsPanel({
   positions,
   quantities,
   b,
-  totalDeposited,
   balance,
 }: PositionsPanelProps) {
   const activePositions = positions.filter((p) => p.shares > 0.001);
 
   if (activePositions.length === 0) {
     return (
-      <div className="rounded-xl border border-[#262626] bg-[#141414] p-4">
-        <h3 className="text-sm font-semibold text-gray-300 mb-3">Your Positions</h3>
-        <p className="text-gray-500 text-sm">No positions yet. Place a bet to get started!</p>
+      <div className="border border-[var(--border)] bg-[var(--surface)] p-3">
+        <h3 className="text-[10px] uppercase tracking-widest text-[var(--muted)] mb-2">Your Bets</h3>
+        <p className="text-[var(--muted)] text-xs">No bets yet. Pick an outcome to start.</p>
       </div>
     );
   }
@@ -43,55 +41,37 @@ export function PositionsPanel({
     return { ...pos, sellValue };
   });
 
-  const totalPortfolio = balance + totalPositionValue;
-  const pnl = totalPortfolio - totalDeposited;
-
   return (
-    <div className="rounded-xl border border-[#262626] bg-[#141414] p-4">
-      <h3 className="text-sm font-semibold text-gray-300 mb-3">Your Positions</h3>
-      <div className="space-y-2">
+    <div className="border border-[var(--border)] bg-[var(--surface)] p-3">
+      <h3 className="text-[10px] uppercase tracking-widest text-[var(--muted)] mb-2">Your Bets</h3>
+      <div className="space-y-1">
         {enriched.map((pos) => {
           const color = OUTCOME_COLORS[pos.outcome_index];
           const label = OUTCOME_LABELS[pos.outcome_index];
           return (
             <div
               key={pos.outcome_index}
-              className="flex items-center justify-between py-2 border-b border-[#1a1a1a] last:border-0"
+              className="flex items-center justify-between py-1.5 border-b border-[var(--border)] last:border-0"
             >
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                <div>
-                  <div className="text-sm font-medium" style={{ color }}>{label}</div>
-                  <div className="text-xs text-gray-500">{pos.shares.toFixed(3)} shares</div>
-                </div>
+                <div className="w-1.5 h-1.5" style={{ backgroundColor: color }} />
+                <span className="text-xs font-medium font-mono" style={{ color }}>{label}</span>
+                <span className="text-[10px] text-[var(--muted)] font-mono">
+                  {pos.shares.toFixed(1)} shares
+                </span>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-white">${pos.sellValue.toFixed(2)}</div>
-                <div className="text-xs text-gray-500">sell value</div>
-              </div>
+              <span className="text-xs font-mono">${pos.sellValue.toFixed(2)}</span>
             </div>
           );
         })}
       </div>
-      <div className="mt-3 pt-3 border-t border-[#262626] space-y-1">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-400">Balance</span>
-          <span className="text-white">${balance.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-400">Position value</span>
-          <span className="text-white">${totalPositionValue.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm font-semibold border-t border-[#262626] pt-1">
-          <span className="text-gray-300">Portfolio</span>
-          <span className="text-white">${totalPortfolio.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-400">P&L</span>
-          <span className={pnl >= 0 ? "text-green-400" : "text-red-400"}>
-            {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
-          </span>
-        </div>
+      <div className="mt-2 pt-2 border-t border-[var(--border)] flex justify-between text-xs font-mono">
+        <span className="text-[var(--muted)]">Balance</span>
+        <span>${balance.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between text-xs font-mono mt-0.5">
+        <span className="text-[var(--muted)]">Bet value</span>
+        <span>${totalPositionValue.toFixed(2)}</span>
       </div>
     </div>
   );

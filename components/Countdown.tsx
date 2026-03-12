@@ -30,14 +30,11 @@ export function Countdown({ targetDate }: { targetDate: string }) {
     return () => clearInterval(interval);
   }, [targetDate]);
 
-  if (isPast) return <span className="text-yellow-400 text-sm">Market resolving...</span>;
+  if (isPast) return <span className="text-yellow-400 text-xs font-mono">Resolving...</span>;
 
   return (
-    <span className="text-gray-400 text-sm">
-      Resolves in{" "}
-      <span className="text-white font-medium">
-        {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
-      </span>
+    <span className="text-[var(--muted)] text-xs font-mono">
+      {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
     </span>
   );
 }

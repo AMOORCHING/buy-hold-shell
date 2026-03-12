@@ -87,7 +87,7 @@ function seedMarket(db: Database.Database) {
     VALUES (?, ?, ?, ?, ?, 'open', ?, ?)
   `).run(
     "New Batch Retention — May 2nd",
-    "What percentage of the newest Startup Shell batch will still be actively participating by May 2nd, 2026? A member is 'active' if they attended at least 2 Shell events or meetings in the 3 weeks before May 2nd. Resolution is determined by the Shell executive board.",
+    "What percentage of the newest Startup Shell batch will still be actively participating by May 2nd, 2026? A member is 'active' if 10 or more people in the space know them by name. Resolution is determined by the Shell executive board.",
     JSON.stringify(["0-25%", "25-50%", "50-75%", "75-100%"]),
     50,
     JSON.stringify([0, 0, 0, 0]),
@@ -122,7 +122,7 @@ export function upsertUser(user: {
   } else {
     const isAdmin = adminEmail && user.email === adminEmail ? 1 : 0;
     db.prepare(
-      "INSERT INTO users (id, name, email, image, is_admin) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO users (id, name, email, image, balance, is_admin) VALUES (?, ?, ?, ?, 10.0, ?)"
     ).run(user.id, user.name, user.email, user.image ?? null, isAdmin);
   }
 }

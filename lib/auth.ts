@@ -12,6 +12,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }) {
       if (!user.id || !user.name || !user.email) return false;
+      if (!user.email.endsWith("@startupshell.org")) return false;
       upsertUser({
         id: user.id,
         name: user.name,

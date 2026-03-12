@@ -18,34 +18,32 @@ export function ProbabilityBar({
 
   return (
     <div className="w-full">
-      {/* Stacked bar */}
-      <div className="flex w-full h-10 rounded-xl overflow-hidden gap-0.5">
+      <div className="flex w-full h-7 overflow-hidden gap-px">
         {pcts.map((pct, i) => (
           <div
             key={i}
-            className="flex items-center justify-center text-white text-xs font-bold transition-all duration-500 cursor-pointer"
+            className="flex items-center justify-center text-white text-[10px] font-bold transition-all duration-500 cursor-pointer"
             style={{
               width: `${pct}%`,
               backgroundColor: OUTCOME_COLORS[i],
               minWidth: pct > 0 ? "2px" : "0",
-              opacity: selectedOutcome !== null && selectedOutcome !== undefined && selectedOutcome !== i ? 0.6 : 1,
+              opacity: selectedOutcome !== null && selectedOutcome !== undefined && selectedOutcome !== i ? 0.5 : 1,
             }}
             onClick={() => onSelectOutcome?.(i)}
           >
-            {pct >= 8 ? `${pct}%` : ""}
+            {pct >= 10 ? `${pct}%` : ""}
           </div>
         ))}
       </div>
-      {/* Labels */}
-      <div className="flex w-full mt-2">
+      <div className="flex w-full mt-1.5">
         {pcts.map((pct, i) => (
           <div
             key={i}
             className="transition-all duration-500 text-center"
             style={{ width: `${pct}%`, minWidth: "0" }}
           >
-            {pct >= 10 && (
-              <div className="text-gray-400 text-xs truncate" style={{ color: OUTCOME_COLORS[i] }}>
+            {pct >= 12 && (
+              <div className="text-[10px] font-mono" style={{ color: OUTCOME_COLORS[i] }}>
                 {OUTCOME_LABELS[i]}
               </div>
             )}

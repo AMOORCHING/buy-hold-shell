@@ -19,12 +19,12 @@ interface Trade {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const secs = Math.floor(diff / 1000);
-  if (secs < 60) return `${secs}s ago`;
+  if (secs < 60) return `${secs}s`;
   const mins = Math.floor(secs / 60);
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(hrs / 24)}d`;
 }
 
 export function TradesFeed({
@@ -36,14 +36,14 @@ export function TradesFeed({
 }) {
   if (trades.length === 0) {
     return (
-      <div className="text-center text-gray-500 text-sm py-8">
-        No trades yet. Be the first!
+      <div className="text-center text-[var(--muted)] text-xs py-4">
+        No trades yet.
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-0">
       {trades.map((trade) => {
         const isBuy = trade.cost > 0;
         const color = OUTCOME_COLORS[trade.outcome_index];
@@ -53,44 +53,37 @@ export function TradesFeed({
         return (
           <div
             key={trade.id}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm ${
-              isCurrentUser ? "bg-[#1a1a1a] border border-[#2a2a2a]" : "bg-[#0f0f0f]"
+            className={`flex items-center gap-2 px-2 py-1.5 text-[11px] border-b border-[var(--border)] last:border-0 ${
+              isCurrentUser ? "bg-[var(--surface-2)]" : ""
             }`}
           >
-            {/* Avatar */}
-            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-[#262626]">
+            <div className="w-5 h-5 overflow-hidden flex-shrink-0 bg-[var(--surface-2)]">
               {trade.user_image ? (
                 <Image
                   src={trade.user_image}
                   alt={trade.user_name}
-                  width={28}
-                  height={28}
+                  width={20}
+                  height={20}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                <div className="w-full h-full flex items-center justify-center text-[9px] text-[var(--muted)]">
                   {trade.user_name[0]}
                 </div>
               )}
             </div>
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <span className="text-gray-300 font-medium">
-                {isCurrentUser ? "You" : trade.user_name}
+            <div className="flex-1 min-w-0 font-mono truncate">
+              <span className="font-medium">
+                {isCurrentUser ? "You" : trade.user_name.split(" ")[0]}
               </span>{" "}
-              <span className="text-gray-500">{isBuy ? "bought" : "sold"}</span>{" "}
-              <span className="text-white font-medium">{Math.abs(trade.shares).toFixed(2)} shares</span>{" "}
-              <span className="text-gray-500">of</span>{" "}
-              <span className="font-semibold" style={{ color }}>
-                {label}
-              </span>{" "}
-              <span className="text-gray-500">{isBuy ? "for" : "receiving"}</span>{" "}
+              <span className="text-[var(--muted)]">{isBuy ? "bought" : "sold"}</span>{" "}
+              <span className="font-medium">{Math.abs(trade.shares).toFixed(2)}</span>{" "}
+              <span className="font-semibold" style={{ color }}>{label}</span>{" "}
               <span className={isBuy ? "text-red-400" : "text-green-400"}>
                 ${Math.abs(trade.cost).toFixed(2)}
               </span>
             </div>
-            {/* Time */}
-            <div className="text-gray-600 text-xs flex-shrink-0">{timeAgo(trade.created_at)}</div>
+            <div className="text-[var(--muted)] text-[10px] flex-shrink-0 font-mono">{timeAgo(trade.created_at)}</div>
           </div>
         );
       })}

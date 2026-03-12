@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { sharesToBuy, revenueToSell, getProbabilities, costToBuy } from "@/lib/lmsr";
+import { sharesToBuy, revenueToSell, getProbabilities } from "@/lib/lmsr";
 import { Modal } from "./Modal";
 import { useToast } from "./Toast";
 
@@ -45,7 +45,6 @@ export function TradingPanel({
   const color = OUTCOME_COLORS[outcomeIndex];
   const label = OUTCOME_LABELS[outcomeIndex];
 
-  // Preview calculations
   const previewShares = tab === "buy" ? sharesToBuy(quantities, outcomeIndex, dollarAmount, b) : 0;
   const previewRevenue = tab === "sell" && sellShares > 0
     ? revenueToSell(quantities, outcomeIndex, sellShares, b)
@@ -59,14 +58,7 @@ export function TradingPanel({
   newQuantitiesSell[outcomeIndex] -= sellShares;
   const newProbSell = sellShares > 0 ? getProbabilities(newQuantitiesSell, b)[outcomeIndex] : getProbabilities(quantities, b)[outcomeIndex];
 
-  const avgPrice = previewShares > 0 ? dollarAmount / previewShares : 0;
-
-  const canBuy =
-    session &&
-    dollarAmount >= 1 &&
-    dollarAmount <= 5 &&
-    userBalance >= dollarAmount;
-
+  const canBuy = session && dollarAmount >= 1 && dollarAmount <= 5 && userBalance >= dollarAmount;
   const canSell = session && sellShares > 0 && sellShares <= userShares;
 
   const executeTrade = async () => {
@@ -125,17 +117,15 @@ export function TradingPanel({
 
   return (
     <div
-      className="rounded-xl border bg-[#141414] p-4 mt-3"
-      style={{ borderColor: `${color}40` }}
+      className="border bg-[var(--surface)] p-3"
+      style={{ borderColor: `${color}30` }}
     >
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-1 mb-3">
         <button
           onClick={() => setTab("buy")}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-            tab === "buy"
-              ? "text-white"
-              : "bg-[#1a1a1a] text-gray-400 hover:text-white"
+          className={`flex-1 py-1.5 text-xs font-semibold transition-colors ${
+            tab === "buy" ? "text-white" : "bg-[var(--surface-2)] text-[var(--muted)] hover:text-[var(--foreground)]"
           }`}
           style={tab === "buy" ? { backgroundColor: color } : {}}
         >
@@ -144,10 +134,8 @@ export function TradingPanel({
         <button
           onClick={() => setTab("sell")}
           disabled={userShares <= 0}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-            tab === "sell"
-              ? "text-white"
-              : "bg-[#1a1a1a] text-gray-400 hover:text-white"
+          className={`flex-1 py-1.5 text-xs font-semibold transition-colors ${
+            tab === "sell" ? "text-white" : "bg-[var(--surface-2)] text-[var(--muted)] hover:text-[var(--foreground)]"
           } disabled:opacity-40 disabled:cursor-not-allowed`}
           style={tab === "sell" ? { backgroundColor: color } : {}}
         >
@@ -157,19 +145,18 @@ export function TradingPanel({
 
       {tab === "buy" ? (
         <>
-          <div className="text-xs text-gray-400 mb-2">
-            Buy <span className="font-semibold" style={{ color }}>{label}</span> shares
+          <div className="text-[10px] text-[var(--muted)] mb-2">
+            Buy <span className="font-semibold" style={{ color }}>{label}</span>
           </div>
-          {/* Quick amounts */}
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-1 mb-2">
             {QUICK_AMOUNTS.map((amt) => (
               <button
                 key={amt}
                 onClick={() => setDollarAmount(amt)}
-                className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                className={`flex-1 py-1 text-xs font-mono transition-colors border ${
                   dollarAmount === amt
-                    ? "border-white text-white"
-                    : "border-[#262626] text-gray-400 hover:border-[#404040]"
+                    ? "border-current"
+                    : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--border-hover)]"
                 }`}
                 style={dollarAmount === amt ? { borderColor: color, color } : {}}
               >
@@ -177,10 +164,9 @@ export function TradingPanel({
               </button>
             ))}
           </div>
-          {/* Custom input */}
-          <div className="mb-3">
-            <div className="flex items-center gap-2 bg-[#0a0a0a] border border-[#262626] rounded-lg px-3 py-2">
-              <span className="text-gray-500">$</span>
+          <div className="mb-2">
+            <div className="flex items-center gap-2 bg-[var(--background)] border border-[var(--border)] px-3 py-1.5">
+              <span className="text-[var(--muted)] text-xs">$</span>
               <input
                 type="number"
                 min="1"
@@ -191,33 +177,22 @@ export function TradingPanel({
                   const v = parseFloat(e.target.value);
                   if (!isNaN(v)) setDollarAmount(Math.max(1, Math.min(5, v)));
                 }}
-                className="flex-1 bg-transparent text-white text-sm outline-none"
+                className="flex-1 bg-transparent text-sm font-mono outline-none"
               />
             </div>
-            {dollarAmount < 1 && (
-              <p className="text-red-400 text-xs mt-1">Minimum bet is $1.00</p>
-            )}
-            {dollarAmount > 5 && (
-              <p className="text-red-400 text-xs mt-1">Maximum bet is $5.00</p>
-            )}
           </div>
-          {/* Preview */}
-          <div className="bg-[#0a0a0a] rounded-lg p-3 mb-3 space-y-1.5 text-sm">
+          <div className="bg-[var(--background)] border border-[var(--border)] p-2.5 mb-2 space-y-1 text-xs font-mono">
             <div className="flex justify-between">
-              <span className="text-gray-400">Shares received</span>
-              <span className="text-white font-medium">~{previewShares.toFixed(3)}</span>
+              <span className="text-[var(--muted)]">You get</span>
+              <span>~{previewShares.toFixed(2)} shares</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Avg price/share</span>
-              <span className="text-white">${avgPrice.toFixed(4)}</span>
+              <span className="text-[var(--muted)]">New odds</span>
+              <span style={{ color }}>{Math.round(newProbBuy * 100)}%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">New probability</span>
-              <span className="font-medium" style={{ color }}>{Math.round(newProbBuy * 100)}%</span>
-            </div>
-            <div className="flex justify-between border-t border-[#262626] pt-1.5">
-              <span className="text-gray-400">Your balance after</span>
-              <span className={userBalance - dollarAmount < 0 ? "text-red-400" : "text-white"}>
+            <div className="flex justify-between border-t border-[var(--border)] pt-1">
+              <span className="text-[var(--muted)]">Remaining</span>
+              <span className={userBalance - dollarAmount < 0 ? "text-red-400" : ""}>
                 ${(userBalance - dollarAmount).toFixed(2)}
               </span>
             </div>
@@ -225,21 +200,18 @@ export function TradingPanel({
           <button
             onClick={handleTrade}
             disabled={!canBuy || loading}
-            className="w-full py-3 rounded-xl font-bold text-white transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-2 font-bold text-white transition-all text-xs disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ backgroundColor: canBuy ? color : "#333" }}
           >
-            {loading ? "Placing bet..." : !session ? "Sign in to trade" : `Place Bet — $${dollarAmount.toFixed(2)}`}
+            {loading ? "Placing..." : !session ? "Sign in" : `Bet $${dollarAmount.toFixed(2)}`}
           </button>
         </>
       ) : (
         <>
-          <div className="text-xs text-gray-400 mb-2">
-            Sell <span className="font-semibold" style={{ color }}>{label}</span> shares
+          <div className="text-[10px] text-[var(--muted)] mb-2">
+            Sell <span className="font-semibold" style={{ color }}>{label}</span>
           </div>
-          <div className="mb-3">
-            <label className="text-xs text-gray-400 mb-1 block">
-              Shares to sell (max: {userShares.toFixed(3)})
-            </label>
+          <div className="mb-2">
             <input
               type="range"
               min="0"
@@ -247,9 +219,9 @@ export function TradingPanel({
               step="0.01"
               value={sellShares}
               onChange={(e) => setSellShares(parseFloat(e.target.value))}
-              className="w-full mb-2"
+              className="w-full mb-1.5"
             />
-            <div className="flex items-center gap-2 bg-[#0a0a0a] border border-[#262626] rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 bg-[var(--background)] border border-[var(--border)] px-3 py-1.5">
               <input
                 type="number"
                 min="0"
@@ -260,35 +232,35 @@ export function TradingPanel({
                   const v = parseFloat(e.target.value);
                   if (!isNaN(v)) setSellShares(Math.max(0, Math.min(userShares, v)));
                 }}
-                className="flex-1 bg-transparent text-white text-sm outline-none"
+                className="flex-1 bg-transparent text-sm font-mono outline-none"
               />
               <button
                 onClick={() => setSellShares(userShares)}
-                className="text-xs text-gray-400 hover:text-white px-2 py-0.5 rounded bg-[#262626]"
+                className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] px-2 py-0.5 bg-[var(--surface-2)]"
               >
                 Max
               </button>
             </div>
           </div>
           {sellShares > 0 && (
-            <div className="bg-[#0a0a0a] rounded-lg p-3 mb-3 space-y-1.5 text-sm">
+            <div className="bg-[var(--background)] border border-[var(--border)] p-2.5 mb-2 space-y-1 text-xs font-mono">
               <div className="flex justify-between">
-                <span className="text-gray-400">You receive</span>
-                <span className="text-green-400 font-medium">${previewRevenue.toFixed(4)}</span>
+                <span className="text-[var(--muted)]">You receive</span>
+                <span className="text-green-400">${previewRevenue.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">New probability</span>
-                <span className="font-medium" style={{ color }}>{Math.round(newProbSell * 100)}%</span>
+                <span className="text-[var(--muted)]">New odds</span>
+                <span style={{ color }}>{Math.round(newProbSell * 100)}%</span>
               </div>
             </div>
           )}
           <button
             onClick={handleTrade}
             disabled={!canSell || loading}
-            className="w-full py-3 rounded-xl font-bold text-white transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-2 font-bold text-white transition-all text-xs disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ backgroundColor: canSell ? color : "#333" }}
           >
-            {loading ? "Selling..." : `Sell ${sellShares.toFixed(2)} Shares`}
+            {loading ? "Selling..." : `Sell ${sellShares.toFixed(2)}`}
           </button>
         </>
       )}
