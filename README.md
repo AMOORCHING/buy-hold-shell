@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# buy-hold-shell
 
-## Getting Started
+A prediction market platform for [Startup Shell](https://startupshell.org). Members sign in with Google, receive a starting balance, and trade on outcomes of internal markets. Admins can create markets, manage user balances, and resolve outcomes.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** — App Router, API routes, SSE for live market updates
+- **NextAuth v4** — Google OAuth
+- **better-sqlite3** — embedded SQLite database (stored in `/data/market.db`)
+- **Tailwind CSS v4**
+
+## Setup
+
+```bash
+npm install
+```
+
+Create a `.env.local`:
+
+```env
+NEXTAUTH_SECRET=...
+NEXTAUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+ADMIN_EMAIL=you@example.com   # grants admin privileges on sign-in
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The database and schema are initialized automatically on first run. A seed market is inserted if the `markets` table is empty.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- LMSR (logarithmic market scoring rule) automated market maker
+- Real-time probability updates via server-sent events
+- Probability history chart per market
+- Leaderboard ranked by portfolio value
+- Admin panel: open/close/resolve markets, deposit funds, view ledger
